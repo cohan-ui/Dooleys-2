@@ -87,9 +87,15 @@ translation is needed later, re-add the engine, don't rebuild the control.
 must either wait longer than that or disable transitions, or it will capture mid-fade and produce
 false diffs.
 
-Card images use `loading="lazy"`. A full-page screenshot does **not** reliably trigger them — the
-lower cards capture blank. `scripts/shoot.py` scrolls the whole page before capturing for this
-reason; don't remove that step.
+Images use `loading="lazy"` and a full-page screenshot does **not** reliably paint them — scrolling
+the page first is not sufficient either. `scripts/shoot.py` sets every image to `loading="eager"`
+and awaits `img.decode()` before capturing; don't remove that step or lower sections will
+screenshot blank and silently corrupt the baseline.
+
+**`img` width/height attributes map to CSS presentational hints.** That means a `height` attribute
+suppresses `aspect-ratio` unless the author CSS also sets `height:auto`. `.spaces__image-wrap img`
+hit exactly this. If you add an image whose box is meant to be governed by `aspect-ratio`, set
+`height:auto` alongside it.
 
 ## Verification
 
