@@ -64,6 +64,10 @@ Keep it that way — see Verification below.
 - `.hero__shape` (the orbiting arc) is desktop-only, hidden `!important` below 900px.
 - Colour: `--ink` `#18302b`, `--paper` `#f6f2ea`, gold accent on CTAs. Flat colour, no gradients
   except the header scrim.
+- The **events section overrides the global palette**: warm ground `#dbd2bf`, cream tiles `#fffdf7`,
+  claret card headings `#750b22`. These are scoped to `.events` only — the other `section--tint`
+  sections (location, FAQ) still use the pale green `--tint`. If the warm treatment is meant to be
+  global, change `--tint` rather than adding more scoped overrides.
 
 ## JS behaviour
 
@@ -78,6 +82,10 @@ translation is needed later, re-add the engine, don't rebuild the control.
 `.motion-reveal` elements start at `opacity:0` and transition over **700ms**. Any screenshot script
 must either wait longer than that or disable transitions, or it will capture mid-fade and produce
 false diffs.
+
+Card images use `loading="lazy"`. A full-page screenshot does **not** reliably trigger them — the
+lower cards capture blank. `scripts/shoot.py` scrolls the whole page before capturing for this
+reason; don't remove that step.
 
 ## Verification
 

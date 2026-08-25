@@ -30,7 +30,14 @@ async def main():
             await page.evaluate(
                 "document.querySelectorAll('.motion-reveal')"
                 ".forEach(e => e.classList.add('is-visible'))")
-            await page.wait_for_timeout(800)
+            # Card images are loading="lazy"; without scrolling the whole page
+            # first they capture blank. See CLAUDE.md > Verification.
+            total = await page.evaluate('document.body.scrollHeight')
+            for y in range(0, total, 600):
+                await page.evaluate(f'window.scrollTo(0,{y})')
+                await page.wait_for_timeout(60)
+            await page.evaluate('window.scrollTo(0,0)')
+            await page.wait_for_timeout(900)
             await page.screenshot(path=OUT / f'{name}.png', full_page=True)
             loaded = await page.evaluate(
                 "document.fonts.check('300 italic 2rem \"PP Eiko\"')")
