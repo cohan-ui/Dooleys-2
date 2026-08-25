@@ -114,6 +114,10 @@ hit exactly this. If you add an image whose box is meant to be governed by `aspe
 `scripts/shoot.py` renders the page at 1440 / 834 / 390 and writes full-page screenshots.
 `scripts/diff.py` pixel-diffs two screenshot sets.
 
+**`reference/` is gitignored and not in the repo.** Capture a baseline before editing —
+`python3 scripts/shoot.py reference` — otherwise there is nothing to diff against. It was
+removed from history because eight regenerated copies of a 3-5MB PNG had grown `.git` to 80MB.
+
 ```bash
 pip install playwright pillow && python3 -m playwright install chromium
 python3 scripts/shoot.py out/after

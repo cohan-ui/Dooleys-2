@@ -20,9 +20,15 @@ Zip the folder and drop it into the **html.to.design** plugin's File tab. Instal
 
 ```bash
 pip install playwright pillow numpy && python3 -m playwright install chromium
+
+python3 scripts/shoot.py reference    # baseline BEFORE your change (not committed)
+# ...make the change...
 python3 scripts/shoot.py out/after
 python3 scripts/diff.py reference out/after
 ```
+
+`reference/` is gitignored — the baselines are build artefacts, not source. Capture one
+before you start editing, or you have nothing to diff against.
 
 See `CLAUDE.md` for architecture notes, the CSS specificity gotcha inherited from the
 extraction, and typography constraints.
