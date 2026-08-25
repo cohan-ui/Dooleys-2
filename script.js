@@ -4,9 +4,56 @@ const navToggle = document.querySelector('.nav-toggle');
 const nav = document.querySelector('#primary-nav');
 const form = document.querySelector('#enquiry-form');
 const toast = document.querySelector('#toast');
+const languageHost = document.querySelector('.gtranslate_wrapper');
 const languageToggle = document.querySelector('#language-toggle');
 const languageMenu = document.querySelector('#language-menu');
 const languageOptions = [...document.querySelectorAll('[data-language]')];
+
+// Translation engine. Only runs when the .gtranslate_wrapper host is present
+// (serve build) AND the page is on a real http(s) origin -- GTranslate drives
+// translation through a googtrans cookie, which does nothing on file://.
+// The Figma-import build omits the host element, so the selector stays inert.
+const TRANSLATION_ENABLED = Boolean(languageHost) && /^https?:$/.test(window.location.protocol);
+
+if (TRANSLATION_ENABLED) {
+  window.gtranslateSettings = {
+    switcher_horizontal_position: 'inline',
+    switcher_vertical_position: 'inline',
+    horizontal_position: 'inline',
+    vertical_position: 'inline',
+    float_switcher_open_direction: 'top',
+    switcher_open_direction: 'bottom',
+    default_language: 'en',
+    native_language_names: 0,
+    detect_browser_language: 0,
+    add_new_line: 1,
+    select_language_label: 'Select Language',
+    flag_size: 32,
+    flag_style: '2d',
+    globe_size: 60,
+    alt_flags: [],
+    wrapper_selector: '.gtranslate_wrapper',
+    url_structure: 'none',
+    custom_domains: null,
+    languages: ['en', 'zh-CN', 'zh-TW', 'ja', 'ko', 'tl', 'vi'],
+    custom_css: ''
+  };
+
+  const translationScript = document.createElement('script');
+  translationScript.src = 'https://cdn.gtranslate.net/widgets/latest/dwf.js';
+  translationScript.async = true;
+  translationScript.referrerPolicy = 'strict-origin-when-cross-origin';
+  document.body.appendChild(translationScript);
+
+  const enhanceLanguageSelector = () => {
+    const selected = languageHost.querySelector('.gt_selected a');
+    if (!selected || selected.dataset.initialised === 'true') return;
+    selected.dataset.initialised = 'true';
+    selected.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+  };
+  new MutationObserver(enhanceLanguageSelector).observe(languageHost, { childList: true, subtree: true });
+  enhanceLanguageSelector();
+}
 
 const languageCodes = {
   en: 'en-AU',
@@ -33,13 +80,52 @@ function updateLanguageControl(option) {
   root.lang = languageCodes[language] || language;
 }
 
+function requestTranslation(language, attempt = 0) {
+  if (typeof window.doGTranslate === 'function') {
+    window.doGTranslate(`en|${language}`);
+    return;
+  }
+  if (attempt < 20) window.setTimeout(() => requestTranslation(language, attempt + 1), 250);
+}
+
+function resetTranslationToEnglish() {
+  const expires = 'Thu, 01 Jan 1970 00:00:00 GMT';
+  const hostnameParts = window.location.hostname.split('.').filter(Boolean);
+  const domains = hostnameParts.map((_, index) => `.${hostnameParts.slice(index).join('.')}`);
+  document.cookie = `googtrans=; expires=${expires}; path=/`;
+  domains.forEach((domain) => {
+    document.cookie = `googtrans=; expires=${expires}; path=/; domain=${domain}`;
+  });
+  try { sessionStorage.setItem('grand-scroll', String(window.scrollY)); } catch (_) {}
+  window.location.reload();
+}
+
 if (languageToggle && languageMenu) {
-  updateLanguageControl(languageOptions[0]);
+  const cookieLanguage = TRANSLATION_ENABLED
+    ? (document.cookie.match(/(?:^|; )googtrans=\/en\/([^;]+)/)?.[1] || 'en')
+    : 'en';
+  updateLanguageControl(
+    languageOptions.find((option) => option.dataset.language === cookieLanguage) || languageOptions[0]);
+
+  if (TRANSLATION_ENABLED) {
+    try {
+      const savedScroll = sessionStorage.getItem('grand-scroll');
+      if (savedScroll !== null) {
+        sessionStorage.removeItem('grand-scroll');
+        window.requestAnimationFrame(() => window.scrollTo(0, Number(savedScroll) || 0));
+      }
+    } catch (_) {}
+  }
 
   languageToggle.addEventListener('click', () => setLanguageMenu(languageToggle.getAttribute('aria-expanded') !== 'true'));
   languageOptions.forEach((option) => option.addEventListener('click', () => {
+    const returningToEnglish = option.dataset.language === 'en' && option.getAttribute('aria-checked') !== 'true';
     updateLanguageControl(option);
     setLanguageMenu(false);
+    if (TRANSLATION_ENABLED) {
+      if (returningToEnglish) resetTranslationToEnglish();
+      else requestTranslation(option.dataset.language);
+    }
     languageToggle.focus();
   }));
   languageMenu.addEventListener('keydown', (event) => {

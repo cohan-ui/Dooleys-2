@@ -78,10 +78,18 @@ Keep it that way — see Verification below.
 `script.js` is progressive enhancement only — header scroll state, mobile nav toggle, enquiry-form
 prefill from CTA clicks, IntersectionObserver reveals, and the language dropdown.
 
-The language selector is **presentational only**. The original demo wired it to GTranslate; that
-engine was stripped during extraction because the cookie-and-reload behaviour interfered with the
-Figma import. The UI still opens, selects and reflects state — it just doesn't translate. If real
-translation is needed later, re-add the engine, don't rebuild the control.
+The language selector is wired to **GTranslate**, gated by `TRANSLATION_ENABLED` in `script.js`:
+the engine loads only when the `.gtranslate_wrapper` host element exists *and* the page is on an
+http(s) origin. See `SERVE.md`. Consequences:
+
+- Over `file://` the selector opens and updates its label but does not translate. That is expected,
+  not a bug.
+- The **Figma-import build omits the host element** on purpose. GTranslate reloads the page to
+  apply a language, which corrupts an html.to.design capture. Don't add it back to that build.
+- Selecting English is a cookie-expiry plus full reload, not a `doGTranslate` call — Google has no
+  "translate back to source" call. Scroll position is stashed in `sessionStorage` across it.
+- Changing the language list means editing **both** `gtranslateSettings.languages` and the
+  `#language-menu` buttons.
 
 `.motion-reveal` elements start at `opacity:0` and transition over **700ms**. Any screenshot script
 must either wait longer than that or disable transitions, or it will capture mid-fade and produce
