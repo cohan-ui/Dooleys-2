@@ -65,6 +65,10 @@ Keep it that way — see Verification below.
 - `.hero__shape` (the orbiting arc) is desktop-only, hidden `!important` below 900px.
 - Colour: `--ink` `#18302b`, `--paper` `#f6f2ea`, gold accent on CTAs. Flat colour, no gradients
   except the header scrim.
+- **`.offer` uses `background-attachment:fixed`** on desktop. A full-page screenshot renders fixed
+  backgrounds against the whole page rather than the viewport, so the offer band looks lighter and
+  more mottled in captures than it does in a real browser. Don't "correct" the overlay opacity on
+  the basis of a screenshot — measure the band median instead.
 - **Claret `#750b22`** is the accent introduced with the comps: it sets the events card headings
   and the ground of the first packages tile. If more claret appears, promote it to a variable
   rather than repeating the hex.
