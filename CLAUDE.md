@@ -59,11 +59,15 @@ Keep it that way — see Verification below.
 ## Layout system
 
 - Breakpoints that genuinely restructure: **1050px**, **900px**, **760px**.
-- The events grid and the packages grid both change column spans at 900 and 760 — these are the
-  two areas most likely to regress from a careless edit.
+- The events grid changes column spans at 900 and 760 — the area most likely to regress from a
+  careless edit. The packages grid is now a plain `repeat(3,1fr)` with six equal tiles (2 cols at
+  1050, 1 col at 760); no card spans multiple columns any more.
 - `.hero__shape` (the orbiting arc) is desktop-only, hidden `!important` below 900px.
 - Colour: `--ink` `#18302b`, `--paper` `#f6f2ea`, gold accent on CTAs. Flat colour, no gradients
   except the header scrim.
+- **Claret `#750b22`** is the accent introduced with the comps: it sets the events card headings
+  and the ground of the first packages tile. If more claret appears, promote it to a variable
+  rather than repeating the hex.
 - The **events section overrides the global palette**: warm ground `#dbd2bf`, cream tiles `#fffdf7`,
   claret card headings `#750b22`. These are scoped to `.events` only — the other `section--tint`
   sections (location, FAQ) still use the pale green `--tint`. If the warm treatment is meant to be
